@@ -20,7 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class CartProductAdmin(CartProductFilterFKPAdmin, admin.ModelAdmin):
     readonly_fields = ('final_price',)
-    list_display = ('id','customer', 'product', 'cart', 'qty', 'final_price')
+    list_display = ('id', 'customer', 'product', 'cart', 'qty', 'final_price')
     list_filter = ('customer', 'product')
     search_fields = ('customer', 'product')
     form = CountProductValidation
@@ -38,6 +38,7 @@ class CartAdmin(admin.ModelAdmin):
     inlines = [CartProductInline, ]
     list_filter = ('customer', 'in_order')
     search_fields = ('customer', 'in_order')
+    readonly_fields = ('final_price', 'total_product')
 
 
 class OrderAdmin(admin.ModelAdmin):
