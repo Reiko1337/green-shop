@@ -1,4 +1,4 @@
-# Django GukNeedBeer
+# Django Green Shop
 
 **Запустить сервер**
 ```python
