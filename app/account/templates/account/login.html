@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Авторизация{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'main_page' %}">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Авторизация</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-3">Авторизация</strong></h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success btn-block mb-3">Войти</button>
+</form>
+
+{% endblock %}
+
+
+

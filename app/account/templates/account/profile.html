@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'main_page' %}">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Профиль</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-5">Мои заказы <strong>({{ user.username }})</strong></h1>
+{% if user.order_set.all %}
+<table class="table">
+    <thead>
+    <tr>
+        <th>Номер заказа</th>
+        <th>Статус</th>
+        <th>Сумма</th>
+        <th>Товар</th>
+        <th>Дополнительно</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for order in user.order_set.all %}
+    <tr>
+        <th scope="row">{{ order.id }}</th>
+        <td>{{ order.get_status_display}}</td>
+        <td>{{ order.cart.final_price }} BYN</td>
+        <td>
+            <ul>
+                {% for item in order.cart.cartproduct_set.all %}
+                <li>{{ item.product.name }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal{{ order.id }}">
+                Подробнее о заказе
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal{{ order.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Подробнее о заказе</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <h3 class="text-center mb-4">Товар</h3>
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Наименование</th>
+                                    <th scope="col">Изображение</th>
+                                    <th scope="col">Цена</th>
+                                    <th scope="col">Кол-во</th>
+                                    <th scope="col">Общая цена</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in order.cart.cartproduct_set.all %}
+                                <tr>
+                                    <th scope="row">{{ item.product.name }}</th>
+                                    <td class="w-25"><img src="{{ item.product.image.url }}" class="img-fluid"></td>
+                                    <td>{{ item.product.price }} BYN.</td>
+                                    <td>
+                                        {{ item.qty }}
+                                    </td>
+                                    <td>{{ item.final_price }} BYN.</td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td>Итого:</td>
+                                    <td>{{ order.cart.total_product }}</td>
+                                    <td colspan="2"></td>
+                                    <td><strong>{{ order.cart.final_price }} BYN.</strong></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <hr>
+                            <h3 class="text-center">Дополнительная информация</h3>
+                            <ul>
+                                <li>Тип доставки: {{ order.get_buying_type_display}}</li>
+                                <li>Дата заказа: {{ order.created_at }}</li>
+                                {% if order.comment|length > 1 %}
+                                <li>Комментарий к заказу: {{ order.comment }}</li>
+                                {% endif %}
+                            </ul>
+                            <hr>
+                            <h3 class="text-center">Информация о заказчике</h3>
+                            <ul>
+                                <li>Имя: {{ order.first_name }}</li>
+                                <li>Фамилия: {{ order.last_name }}</li>
+                                <li>Телефон: {{ order.phone }}</li>
+                                {% if order.buying_type == 'delivery' %}
+                                <li>Адрес доставки: {{ order.address }}</li>
+                                {% endif %}
+                            </ul>
+                            {% if order.status == 'new' %}
+                            <a href="{% url 'delete_order' order.id %}"><button class="btn btn-danger">Отменить заказ</button></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h4><strong>У вас нет заказов</strong></h4>
+{% endif %}
+{% endblock %}
+
+
+
