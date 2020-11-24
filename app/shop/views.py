@@ -16,6 +16,11 @@ class MainPage(CartMixin, View):
 
     def get(self, request):
         products = Product.objects.all()
+        search_query = request.GET.get('search', '')
+        if search_query:
+            products = products.filter(name__icontains=search_query)
+        else:
+            products = products.all()
         categories = Category.objects.all()
         context = {
             'products': products,
@@ -33,12 +38,25 @@ class DetailProduct(CartMixin, CategoryMixin, DetailView):
         return Product.objects.filter(slug=self.kwargs['slug'])
 
 
-class DetailCategory(CartMixin, CategoryMixin, DetailView):
+class DetailCategory(CartMixin, View):
     template_name = 'shop/category_detail.html'
-    context_object_name = 'category'
 
-    def get_queryset(self):
-        return Category.objects.filter(slug=self.kwargs['slug'])
+    def get(self, request, slug):
+        category = get_object_or_404(Category, slug=slug)
+        products = category.product_set.all()
+        search_query = request.GET.get('search', '')
+        if search_query:
+            products = products.filter(name__icontains=search_query)
+        else:
+            products = products.all()
+        categories = Category.objects.all()
+        context = {
+            'category_name':category,
+            'products': products,
+            'categories': categories,
+            'cart': self.cart
+        }
+        return render(request, self.template_name, context)
 
 
 @method_decorator(login_required, name='dispatch')

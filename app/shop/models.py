@@ -44,6 +44,12 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse('product_detail', args=[self.category.slug, self.slug])
 
+    def save(self, *args, **kwargs):
+        for item in self.cartproduct_set.all():
+            if not item.cart.in_order:
+                item.save()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -83,7 +89,7 @@ class Cart(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return 'Корзина({0}): {1}'.format(self.id, self.customer.username)
+        return 'Пользователь: {0} | Корзина({1}) | Продукты: {2}'.format(self.customer.username, self.id, ', '.join([f'{item.product.name}({item.qty})' for item in self.cartproduct_set.all()]))
 
 
 class Order(models.Model):

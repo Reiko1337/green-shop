@@ -1,29 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ category.name }}{% endblock %}
+{% block title %}{{ category_name.name }}{% endblock %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'main_page' %}">Главная</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+    <ol class="breadcrumb" style="background-color: #1d1e21;">
+        <li class="breadcrumb-item"><a href="{% url 'main_page' %}" class="text-light">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ category_name.name }}</li>
     </ol>
 </nav>
 {% endblock %}
 
 {% block content %}
+    {% if products.count %}
 <div class="row">
-    {% for product in category.product_set.all %}
+    {% for product in products %}
     <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <a href="{{ product.get_absolute_url }}"><img class="card-img-top"
+        <div class="card h-100" style="background-color: #1d1e21;">
+            <div class="card-body">
+                <div></div>
+                <a href="{{ product.get_absolute_url }}"><img class="card-img-top"
                                                           src="{{ MEDIA_URL }}{{ product.image.url }}"
                                                           alt="Картинка {{ product.name }}"></a>
-            <div class="card-body">
-                <h4 class="card-title">
-                    <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                <div>
+                    <h4 class="card-title">
+                    <a href="{{ product.get_absolute_url }}" class="text-light">{{ product.name }}</a>
                 </h4>
                 <h5>{{ product.price }} BYN</h5>
+                </div>
             </div>
             <div class="card-footer text-center">
                 {% if product.qty %}
@@ -37,5 +41,8 @@
         </div>
     </div>
     {% endfor %}
+     {% else %}
+    <h3 style="padding-left: 16px;">Нет товаров</h3>
+    {% endif %}
 </div>
 {% endblock %}

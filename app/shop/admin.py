@@ -18,7 +18,7 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
 
 
-class CartProductAdmin(CartProductFilterFKPAdmin, admin.ModelAdmin):
+class CartProductAdmin(admin.ModelAdmin):
     readonly_fields = ('final_price',)
     list_display = ('id', 'customer', 'product', 'cart', 'qty', 'final_price')
     list_filter = ('customer', 'product')
@@ -26,10 +26,10 @@ class CartProductAdmin(CartProductFilterFKPAdmin, admin.ModelAdmin):
     form = CountProductValidation
 
 
-class CartProductInline(CartProductFilterFKPAdmin, admin.TabularInline):
+class CartProductInline(admin.TabularInline):
     model = models.CartProduct
     readonly_fields = ('final_price',)
-    extra = 1
+    extra = 0
     form = CountProductValidation
 
 
@@ -41,11 +41,21 @@ class CartAdmin(admin.ModelAdmin):
     readonly_fields = ('final_price', 'total_product')
 
 
+class CartInline(admin.TabularInline):
+    model = models.CartProduct
+
+
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'phone', 'cart', 'status')
+    list_display = ('id', 'first_name', 'last_name', 'phone', 'cart_product', 'status')
     list_editable = ('status',)
     list_filter = ('first_name', 'last_name', 'status')
     search_fields = ('first_name', 'last_name', 'status')
+
+    def cart_product(self, obj):
+        cart_products = obj.cart.cartproduct_set.all()
+        return [f'{item.product.name}({item.qty})' for item in cart_products]
+
+    cart_product.short_description = 'Товар'
 
 
 class ProductAdmin(admin.ModelAdmin):

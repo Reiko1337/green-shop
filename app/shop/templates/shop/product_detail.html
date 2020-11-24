@@ -5,9 +5,9 @@
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'main_page' %}">Главная</a></li>
-        <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+    <ol class="breadcrumb" style="background-color: #1d1e21;">
+        <li class="breadcrumb-item"><a href="{% url 'main_page' %}" class="text-light">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}" class="text-light">{{ product.category.name }}</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
     </ol>
