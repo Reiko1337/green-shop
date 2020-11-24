@@ -26,7 +26,7 @@
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #1d1e21;">
-    <div class="container l-10" style="margin-left: 365.5px;">
+    <div class="container l-10">
         <a class="navbar-brand" href="{% url 'main_page' %}"><img src="{% static 'shop/img/logo.png' %}" width="30" class="d-inline-block align-top" alt=""></a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
                 aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,13 @@
                 {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <form>
+                    <div class="md-form mt-0">
+                      <input class="form-control" type="text" placeholder="Поиск" aria-label="Search" name="search">
+                    </div>
+                    </form>
+                </li>
                 {% if user.is_authenticated %}
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'cart' %}">Корзина <span class="badge badge-pill badge-danger">{{ cart.cartproduct_set.all.count }}</span></a>
@@ -58,12 +65,6 @@
                 {% endif %}
             </ul>
         </div>
-    </div>
-    <div>
-        <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" name="search" type="search" placeholder="Поиск" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Поиск</button>
-    </form>
     </div>
 </nav>
 
