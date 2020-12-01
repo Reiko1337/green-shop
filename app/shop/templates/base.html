@@ -19,7 +19,7 @@
             integrity="sha384-LtrjvnR4Twt/qOuYxE721u19sVFLVSA4hf/rRt6PrZTmiPltdZcI7q7PXQBYTKyf"
             crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'shop/css/main.css' %}">
-
+    <script src="https://js.stripe.com/v3/"></script>
     <title>{% block title %}Shine{% endblock %}</title>
 </head>
 <body style="background-color: #27292d;" class="text-light">
@@ -58,11 +58,9 @@
                     </div>
                     </form>
                 </li>
-                {% if user.is_authenticated %}
                 <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'cart' %}">Корзина <span class="badge badge-pill badge-danger">{{ cart.cartproduct_set.all.count }}</span></a>
+                    <a class="nav-link" href="{% url 'cart' %}">Корзина <span class="badge badge-pill badge-danger">{{ cart.get_total_items }}</span></a>
                 </li>
-                {% endif %}
             </ul>
         </div>
     </div>

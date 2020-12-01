@@ -1,166 +1,134 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import DetailView
-from .models import Product, Category, CartProduct
-from .utils import CategoryMixin, CartMixin, recalc_cart
-from django.shortcuts import get_object_or_404
+from .utils import CategoryMixin, CartMixin
 from .forms import OrderForm
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 from django.db import transaction
-from django.contrib import messages
+from .services import *
 
 
-class MainPage(CartMixin, View):
+class MainPageView(CartMixin, View):
     template_name = 'shop/main_page_shop.html'
 
     def get(self, request):
-        products = Product.objects.all()
-        search_query = request.GET.get('search', '')
-        if search_query:
-            products = products.filter(name__icontains=search_query)
-        else:
-            products = products.all()
-        categories = Category.objects.all()
+        products = get_products(request)
+        categories = get_category()
         context = {
             'products': products,
             'categories': categories,
-            'cart': self.cart
+            'cart': self.cart_view
         }
         return render(request, self.template_name, context)
 
 
-class DetailProduct(CartMixin, CategoryMixin, DetailView):
+class DetailProductView(CartMixin, CategoryMixin, DetailView):
     template_name = 'shop/product_detail.html'
     context_object_name = 'product'
 
     def get_queryset(self):
-        return Product.objects.filter(slug=self.kwargs['slug'])
+        return get_product_filter_slug(self.kwargs['slug'])
 
 
-class DetailCategory(CartMixin, View):
+class DetailCategoryView(CartMixin, View):
     template_name = 'shop/category_detail.html'
 
     def get(self, request, slug):
-        category = get_object_or_404(Category, slug=slug)
-        products = category.product_set.all()
-        search_query = request.GET.get('search', '')
-        if search_query:
-            products = products.filter(name__icontains=search_query)
-        else:
-            products = products.all()
-        categories = Category.objects.all()
+        products = get_category_products(slug, request)
+        categories = get_category()
         context = {
-            'category_name':category,
+            'category_name': get_category_name(slug),
             'products': products,
             'categories': categories,
-            'cart': self.cart
+            'cart': self.cart_view
         }
         return render(request, self.template_name, context)
 
 
-@method_decorator(login_required, name='dispatch')
-class Cart(CartMixin, View):
+class CartView(CartMixin, View):
     template_name = 'shop/cart.html'
 
     def get(self, request):
-        categories = Category.objects.all()
+        categories = get_category()
         context = {
             'categories': categories,
-            'cart': self.cart
+            'cart': self.cart_view
         }
         return render(request, self.template_name, context)
 
 
-@method_decorator(login_required, name='dispatch')
-class AddToCart(CartMixin, View):
+class AddToCartView(CartMixin, View):
     def get(self, request, slug):
-        product = get_object_or_404(Product, slug=slug)
-        product_qty = product.qty
-        if not product_qty:
+        product = get_product_slug(slug)
+        if not product.qty:
             messages.error(request, 'Товара нет в наличии')
             return redirect('main_page')
-        cart_product, created = CartProduct.objects.get_or_create(customer=self.cart.customer, cart=self.cart,
-                                                                  product=product)
-        if not created:
-            if cart_product.qty < product_qty:
-                cart_product.qty += 1
-                cart_product.save()
-            else:
-                messages.error(request, 'Нет больше в наличии')
+        if request.user.is_authenticated:
+            if add_to_cart_user(request, self.cart.customer, self.cart, product):
+                return redirect('cart')
+        else:
+            if self.cart.add(product):
                 return redirect('cart')
         messages.success(request, "Товар успешно добавлен")
         return redirect('cart')
 
 
-@method_decorator(login_required, name='dispatch')
-class DeleteFromCart(CartMixin, View):
+class DeleteFromCartView(CartMixin, View):
     def get(self, request, id):
-        cart_product = get_object_or_404(CartProduct, id=id)
-        cart_product.delete()
+        if request.user.is_authenticated:
+            delete_from_cart_product_id(id)
+        else:
+            self.cart.remove(id)
         messages.success(request, "Товар успешно удален")
         return redirect('cart')
 
 
-@method_decorator(login_required, name='dispatch')
 class ChangeQTYView(CartMixin, View):
     def post(self, request, id):
         qty = int(request.POST.get('qty'))
-        cart_product = get_object_or_404(CartProduct, id=id)
-        if cart_product.product.qty < qty:
-            messages.error(request, 'Нет больше в наличии')
-            return redirect('cart')
-        cart_product.qty = qty
-        cart_product.save()
+        if request.user.is_authenticated:
+            if change_qty(request, id, qty):
+                return redirect('cart')
+        else:
+            if self.cart.change_qty(id, quantity=qty):
+                return redirect('cart')
         messages.success(request, "Кол-во успешно изменено")
         return redirect('cart')
 
 
-@method_decorator(login_required, name='dispatch')
-class Checkout(CartMixin, View):
+class CheckoutView(CartMixin, View):
     template_name = 'shop/checkout.html'
 
     def get(self, request):
-        for item in self.cart.cartproduct_set.all():
-            if item.product.qty < item.qty and item.product.qty != 0:
-                cart_product = item
-                cart_product.qty = item.product.qty
-                cart_product.save()
-                messages.error(request, 'Осталось только {0} товара {1}'.format(item.product.qty, item.product))
+        if request.user.is_authenticated:
+            if validation_checkout_user(request, self.cart):
                 return redirect('cart')
-            if item.product.qty <= 0:
-                messages.error(request, 'Товара нет в наличии {0}'.format(item.product.name))
-                item.delete()
+        else:
+            if validation_checkout_anonymous_user(request, self.cart):
                 return redirect('cart')
-        categories = Category.objects.all()
-        form = OrderForm(request.POST or None)
-        if not self.cart.cartproduct_set.all().count():
+        categories = get_category()
+        if not self.cart_view.get_total_items():
             messages.error(request, "Ваша корзина покупок пуста")
             return redirect('main_page')
+        form = OrderForm(request.POST or None)
         context = {
-            'cart': self.cart,
+            'cart': self.cart_view,
             'categories': categories,
             'form': form
         }
         return render(request, self.template_name, context)
 
 
-@method_decorator(login_required, name='dispatch')
-class MakeOrder(CartMixin, View):
+class MakeOrderView(CartMixin, View):
     @transaction.atomic
     def post(self, request):
         form = OrderForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            order.customer = request.user
-            self.cart.in_order = True
-            self.cart.save()
-            for item in self.cart.cartproduct_set.all():
-                product = item.product
-                product.qty -= item.qty
-                product.save()
-            order.cart = self.cart
-            order.save()
+            if request.user.is_authenticated:
+                make_order_user(request, order, self.cart)
+            else:
+                make_order_anonymous_user(self.cart, order)
             messages.success(request, "Заказ оформлен")
             return redirect('main_page')
         return redirect('cart')
+

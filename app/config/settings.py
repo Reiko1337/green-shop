@@ -130,3 +130,6 @@ STATICFILES_DIRS = [
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+CART_SESSION_ID = 'cart'

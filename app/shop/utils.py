@@ -1,10 +1,11 @@
-from .models import Category, Cart, CartProduct, Product
+from .models import Category, Cart, CartProduct
 from django.views.generic.detail import SingleObjectMixin
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from .cart import CartSession, CartUserView
 
 
 class CategoryMixin(SingleObjectMixin):
@@ -22,34 +23,27 @@ class CartMixin(object):
             if not cart:
                 cart = Cart.objects.create(customer=user)
             self.cart = cart
+            self.cart_view = CartUserView(cart)
         else:
-            self.cart = None
+            self.cart = CartSession(request)
+            self.cart_view = CartSession(request)
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
-        context['cart'] = self.cart
+        context['cart'] = self.cart_view
         return context
-
-
-class CartProductFilterFKPAdmin(object):
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "product":
-            kwargs["queryset"] = Product.objects.exclude(qty=0)
-        if db_field.name == "cart":
-            kwargs["queryset"] = Cart.objects.filter(in_order=False)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @receiver(post_delete, sender=CartProduct)
 @receiver(post_save, sender=CartProduct)
 def recalc_cart(sender, instance, **kwargs):
     cart = instance.cart
-    cart_data = cart.cartproduct_set.all().aggregate(models.Sum('final_price'), models.Count('id'))
-    if cart_data.get('final_price__sum'):
+    cart_data = cart.cartproduct_set.all().aggregate(models.Sum('final_price'), models.Sum('qty'))
+    if cart_data.get('final_price__sum') and cart_data.get('qty__sum'):
         cart.final_price = cart_data['final_price__sum']
+        cart.total_product = cart_data['qty__sum']
     else:
         cart.final_price = 0
-    cart.total_product = cart_data['id__count']
+        cart.total_product = 0
     cart.save()

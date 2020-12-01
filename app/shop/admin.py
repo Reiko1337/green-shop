@@ -1,7 +1,6 @@
 from django.contrib import admin
 from . import models
 from django import forms
-from .utils import CartProductFilterFKPAdmin
 
 
 class CountProductValidation(forms.ModelForm):
@@ -46,7 +45,7 @@ class CartInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'phone', 'cart_product', 'status')
+    list_display = ('id', 'first_name', 'last_name', 'phone', 'cart_product', 'final_price', 'status')
     list_editable = ('status',)
     list_filter = ('first_name', 'last_name', 'status')
     search_fields = ('first_name', 'last_name', 'status')
@@ -56,6 +55,11 @@ class OrderAdmin(admin.ModelAdmin):
         return [f'{item.product.name}({item.qty})' for item in cart_products]
 
     cart_product.short_description = 'Товар'
+
+    def final_price(self, obj):
+        return obj.cart.final_price
+
+    final_price.short_description = 'Цена'
 
 
 class ProductAdmin(admin.ModelAdmin):

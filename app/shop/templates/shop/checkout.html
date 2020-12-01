@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-
+{% load static %}
 {% block title %}Оплата{% endblock %}
 
 {% block breadcrumb %}
@@ -25,7 +25,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for item in cart.cartproduct_set.all %}
+    {% for item in cart %}
         <tr>
           <th scope="row">{{ item.product.name }}</th>
           <td class="w-25"><img src="{{ item.product.image.url }}" class="img-fluid"></td>
@@ -36,8 +36,9 @@
     {% endfor %}
         <tr>
           <td>Итого:</td>
-          <td colspan="3">{{ cart.total_product }}</td>
-          <td><strong>{{ cart.final_price }} BYN.</strong></td>
+            <td colspan="2"></td>
+          <td>{{ cart.get_total_items }}</td>
+          <td><strong>{{ cart.get_total_price }} BYN.</strong></td>
         </tr>
   </tbody>
 </table>

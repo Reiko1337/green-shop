@@ -56,7 +56,7 @@ class Product(models.Model):
 
 class CartProduct(models.Model):
     """Корзина продукта"""
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Продукт')
     cart = models.ForeignKey('Cart', on_delete=models.CASCADE, verbose_name='Корзина')
     qty = models.PositiveIntegerField(default=1, verbose_name='Общее количество')
@@ -76,7 +76,7 @@ class CartProduct(models.Model):
 
 class Cart(models.Model):
     """Корзина"""
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', null=True, blank=True)
     total_product = models.PositiveIntegerField(default=0, verbose_name='Количество продуктов')
     final_price = models.DecimalField(max_digits=9, default=0, decimal_places=2, verbose_name='Общая цена')
     in_order = models.BooleanField(default=False, verbose_name='В заказе')
@@ -89,7 +89,9 @@ class Cart(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return 'Пользователь: {0} | Корзина({1}) | Продукты: {2}'.format(self.customer.username, self.id, ', '.join([f'{item.product.name}({item.qty})' for item in self.cartproduct_set.all()]))
+        return 'Пользователь: {0} | Корзина({1}) | Продукты: {2}'.format(
+            self.customer.username if self.customer else '-', self.id, ', '.join(
+                [f'{item.product.name}({item.qty})' for item in self.cartproduct_set.all()]))
 
 
 class Order(models.Model):
@@ -101,6 +103,9 @@ class Order(models.Model):
 
     BUYING_TYPE_SELF = 'self'
     BUYING_TYPE_DELIVERY = 'delivery'
+
+    PAYMENT_TYPE_CASH = 'cash'
+    PAYMENT_TYPE_CARD = 'card'
 
     STATUS_CHOICES = (
         (STATUS_NEW, 'Новый заказ'),
@@ -114,8 +119,13 @@ class Order(models.Model):
         (BUYING_TYPE_DELIVERY, 'Доставка')
     )
 
+    PAYMENT_TYPE_CHOICES = (
+        (PAYMENT_TYPE_CASH, 'Наличные'),
+        (PAYMENT_TYPE_CARD, 'Карта')
+    )
+
     customer = models.ForeignKey(User, verbose_name='Покупатель',
-                                 on_delete=models.CASCADE)
+                                 on_delete=models.CASCADE, blank=True, null=True)
     first_name = models.CharField(max_length=255, verbose_name='Имя')
     last_name = models.CharField(max_length=255, verbose_name='Фамилия')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
@@ -133,6 +143,12 @@ class Order(models.Model):
         choices=BUYING_TYPE_CHOICES,
         default=BUYING_TYPE_SELF
     )
+    payment_type = models.CharField(
+        max_length=100,
+        verbose_name='Тип оплаты',
+        choices=PAYMENT_TYPE_CHOICES,
+        default=PAYMENT_TYPE_CASH
+    )
     comment = models.TextField(verbose_name='Комментарий к заказу', null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True, verbose_name='Дата создания заказа')
 
@@ -142,4 +158,7 @@ class Order(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return 'Заказ({0}): {1}'.format(self.id, self.customer.username)
+        if self.customer:
+            return 'Заказ({0}): {1}'.format(self.id, self.customer.username)
+        else:
+            return 'Заказ({0}): {1} {2}'.format(self.id, self.first_name, self.last_name)

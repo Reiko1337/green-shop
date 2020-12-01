@@ -3,43 +3,42 @@ from django.views import View
 from shop.utils import CartMixin, CategoryMixin
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
-from shop.models import Category, Order
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.shortcuts import get_object_or_404
 from django.contrib import messages
+from .services import *
 
 
 @method_decorator(login_required, name='dispatch')
-class Profile(CartMixin, View):
+class ProfileView(CartMixin, View):
     template_name = 'account/profile.html'
 
     def get(self, request):
-        categories = Category.objects.all()
+        categories = get_category()
         context = {
-            'cart': self.cart,
+            'cart': self.cart_view,
             'categories': categories,
         }
         return render(request, self.template_name, context)
 
 
-class Login(LoginView):
+class LoginView(LoginView):
     template_name = 'account/login.html'
     redirect_authenticated_user = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
+        context['categories'] = get_category()
         return context
 
 
-class Registration(View):
+class RegistrationView(View):
     template_name = 'account/registration.html'
 
     def get(self, request):
         form = UserCreationForm()
-        categories = Category.objects.all()
+        categories = get_category()
         context = {
             'categories': categories,
             'form': form
@@ -48,7 +47,7 @@ class Registration(View):
 
     def post(self, request):
         form = UserCreationForm(request.POST)
-        categories = Category.objects.all()
+        categories = get_category()
         context = {
             'categories': categories,
             'form': form
@@ -62,13 +61,8 @@ class Registration(View):
 
 
 @method_decorator(login_required, name='dispatch')
-class DeleteOrder(View):
+class DeleteOrderView(View):
     def get(self, request, id):
-        order = get_object_or_404(Order, id=id, customer=request.user, status='new')
-        for item in order.cart.cartproduct_set.all():
-            product = item.product
-            product.qty += item.qty
-            product.save()
-        order.cart.delete()
+        delete_order(request, id)
         messages.success(request, "Заказ успешно отменен")
         return redirect('profile')

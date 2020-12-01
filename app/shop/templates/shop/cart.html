@@ -12,8 +12,8 @@
 {% endblock %}
 
 {% block content %}
-<h3 class="text-center mb-5">Ваша корзина {% if not cart.products.count %}пуста{% endif %}</h3>
-{% if cart.cartproduct_set.all.count %}
+<h3 class="text-center mb-5">Ваша корзина {% if not cart.get_total_items %}пуста{% endif %}</h3>
+{% if cart.get_total_items %}
 <table class="table text-light">
     <thead>
     <tr>
@@ -26,7 +26,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for item in cart.cartproduct_set.all %}
+    {% for item in cart %}
     <tr>
         <th scope="row">{{ item.product.name }}</th>
         <td class="w-25"><img src="{{ item.product.image.url }}" class="img-fluid"></td>
@@ -35,7 +35,8 @@
             <form action="{% url 'change_qty' item.id %}"
                   method="POST">
                 {% csrf_token %}
-                <input type="number" class="form-control" name="qty" style="width: 70px;" min="1" max="{% if item.product.qty < 100 %}{{ item.product.qty }}{% else %}100{% endif %}"
+                <input type="number" class="form-control" name="qty" style="width: 70px;" min="1"
+                       max="{% if item.product.qty < 100 %}{{ item.product.qty }}{% else %}100{% endif %}"
                        value="{{ item.qty }}">
                 <br>
                 <input type="submit" class="btn btn-primary" value="Изменить кол-во">
@@ -43,20 +44,21 @@
         </td>
         <td>{{ item.final_price }} BYN.</td>
         <td>
-            <a href="{% url 'delete_from_cart' item.id  %}">
+            <a href="{% url 'delete_from_cart' item.id %}">
                 <button class="btn btn-danger">Удалить из корзины</button>
             </a>
         </td>
     </tr>
     {% endfor %}
-      <tr>
-          <td>Итого:</td>
-          <td>{{ cart.total_product }}</td>
-          <td colspan="2"></td>
-          <td><strong>{{ cart.final_price }} BYN.</strong></td>
-          <td><a href="{% url 'checkout' %}"><button class="btn btn-primary">Перейти к оформлению</button></a></td>
-        </tr>
-
+    <tr>
+        <td>Итого:</td>
+        <td colspan="2"></td>
+        <td>{{ cart.get_total_items }}</td>
+        <td><strong>{{ cart.get_total_price }} BYN.</strong></td>
+        <td><a href="{% url 'checkout' %}">
+            <button class="btn btn-primary">Перейти к оформлению</button>
+        </a></td>
+    </tr>
     </tbody>
 </table>
 {% endif %}
