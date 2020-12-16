@@ -131,4 +131,3 @@ class MakeOrderView(CartMixin, View):
             messages.success(request, "Заказ оформлен")
             return redirect('main_page')
         return redirect('cart')
-

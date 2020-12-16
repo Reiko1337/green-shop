@@ -89,9 +89,8 @@ class Cart(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return 'Пользователь: {0} | Корзина({1}) | Продукты: {2}'.format(
-            self.customer.username if self.customer else '-', self.id, ', '.join(
-                [f'{item.product.name}({item.qty})' for item in self.cartproduct_set.all()]))
+        return 'Пользователь: {0} | Корзина({1})'.format(
+            self.customer.username if self.customer else '-', self.id)
 
 
 class Order(models.Model):
