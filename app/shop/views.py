@@ -5,6 +5,7 @@ from .utils import CategoryMixin, CartMixin
 from .forms import OrderForm
 from django.db import transaction
 from .services import *
+from django.core.mail import EmailMessage
 
 
 class MainPageView(CartMixin, View):
@@ -128,6 +129,7 @@ class MakeOrderView(CartMixin, View):
                 make_order_user(request, order, self.cart)
             else:
                 make_order_anonymous_user(self.cart, order)
+            email_message(order)
             messages.success(request, "Заказ оформлен")
             return redirect('main_page')
         return redirect('cart')

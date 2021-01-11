@@ -3,7 +3,8 @@ import os
 import environ
 
 env = environ.Env(
-    DEBUG=(bool, False)
+    DEBUG=(bool, False),
+    EMAIL_USE_TLS=(bool, True)
 )
 environ.Env.read_env()
 
@@ -81,6 +82,14 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+
+EMAIL_MESSAGE_TO = env('EMAIL_MESSAGE_TO')
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'profile'

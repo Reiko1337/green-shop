@@ -1,0 +1,16 @@
+{% autoescape off %}
+Заказ #{{ order_id }}
+Фамилия: {{ last_name }}
+Имя: {{ first_name }}
+Телефон: {{ phone }}
+Адрес: {{ address }}
+Дата: {{ order_date }}
+---------------------------Товар---------------------------
+{% for item in items %}
+Наименование: {{ item.product.name }}
+Количество: {{ item.qty }}
+Цена: {{ item.product.price }} BYN
+Общая цена: {{ item.final_price }} BYN
+
+{% endfor %}
+{% endautoescape %}

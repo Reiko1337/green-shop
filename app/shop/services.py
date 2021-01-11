@@ -1,7 +1,9 @@
 from .models import CartProduct, Cart, Category, Product
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 
 def search_product(products, request):
     search_query = request.GET.get('search', '')
@@ -119,3 +121,17 @@ def add_to_cart_user(request, customer, cart, product):
             messages.error(request, 'Нет больше в наличии')
             return True
 
+
+def email_message(order):
+    subject = f'Заказ #{order.pk}'
+    context = {'order_id': order.pk,
+               'last_name': order.last_name,
+               'first_name': order.first_name,
+               'phone': order.phone,
+               'address': order.address,
+               'order_date': order.created_at,
+               'items': order.cart.cartproduct_set.all()
+               }
+    message = render_to_string('shop/message_email.html', context)
+    em = EmailMessage(subject=subject, body=message, to=[settings.EMAIL_MESSAGE_TO])
+    em.send()

@@ -23,7 +23,7 @@ class Category(models.Model):
 
 
 def get_path_category(instance, filename):
-    return '{0}/{1}{2}'.format(instance.category, instance.slug, Path(filename).suffix)
+    return '{0}/{1}{2}'.format(instance.category.slug, instance.slug, Path(filename).suffix)
 
 
 class Product(models.Model):
