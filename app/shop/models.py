@@ -27,7 +27,7 @@ def get_path_category(instance, filename):
 
 
 class Product(models.Model):
-    """Продукт"""
+    """Товар"""
     name = models.CharField('Наименование', max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
     description = models.TextField(verbose_name='Описание', blank=True)
@@ -37,8 +37,8 @@ class Product(models.Model):
     price = models.DecimalField(validators=[MinValueValidator(0)], max_digits=9, decimal_places=2, verbose_name='Цена')
 
     class Meta:
-        verbose_name = 'Продукт'
-        verbose_name_plural = 'Продукты'
+        verbose_name = 'Товар'
+        verbose_name_plural = 'Товары'
         ordering = ['-id']
 
     def get_absolute_url(self):
@@ -99,6 +99,7 @@ class Order(models.Model):
     STATUS_IN_PROGRESS = 'in_progress'
     STATUS_READY = 'is_ready'
     STATUS_COMPLETED = 'completed'
+    STATUS_CANCEL = 'cancel'
 
     BUYING_TYPE_SELF = 'self'
     BUYING_TYPE_DELIVERY = 'delivery'
@@ -110,7 +111,8 @@ class Order(models.Model):
         (STATUS_NEW, 'Новый заказ'),
         (STATUS_IN_PROGRESS, 'Заказ в обработке'),
         (STATUS_READY, 'Заказ готов'),
-        (STATUS_COMPLETED, 'Заказ выполнен')
+        (STATUS_COMPLETED, 'Заказ выполнен'),
+        (STATUS_CANCEL, 'Заказ отменен')
     )
 
     BUYING_TYPE_CHOICES = (
@@ -129,7 +131,7 @@ class Order(models.Model):
     last_name = models.CharField(max_length=255, verbose_name='Фамилия')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
     cart = models.ForeignKey(Cart, verbose_name='Корзина', on_delete=models.CASCADE, null=True, blank=True)
-    address = models.CharField(max_length=1024, verbose_name='Адрес', null=True, blank=True)
+    address = models.CharField(max_length=1024, verbose_name='Адрес')
     status = models.CharField(
         max_length=100,
         verbose_name='Статус заказ',
@@ -155,6 +157,9 @@ class Order(models.Model):
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
         ordering = ['-id']
+
+    def delete(self, *args, **kwargs):
+        super(Order, self).delete()
 
     def __str__(self):
         if self.customer:

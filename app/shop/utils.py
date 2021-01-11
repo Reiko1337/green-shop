@@ -1,4 +1,4 @@
-from .models import Category, Cart, CartProduct
+from .models import Category, Cart, CartProduct, Order
 from django.views.generic.detail import SingleObjectMixin
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -47,3 +47,14 @@ def recalc_cart(sender, instance, **kwargs):
         cart.final_price = 0
         cart.total_product = 0
     cart.save()
+
+
+@receiver(post_delete, sender=Order)
+def delete_order(sender, instance, **kwargs):
+    cart = instance.cart
+    for item in cart.cartproduct_set.all():
+        product = item.product
+        product.qty += item.qty
+        product.save()
+    cart.delete()
+
