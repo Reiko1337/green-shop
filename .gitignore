@@ -80,7 +80,7 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 # Environments
-.env
+app/config/.env
 .venv
 env/
 venv/
@@ -98,3 +98,5 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+media/
