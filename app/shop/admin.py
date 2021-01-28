@@ -4,7 +4,6 @@ from django import forms
 from django.utils.html import mark_safe
 from django.template.loader import render_to_string
 
-
 class CountProductValidation(forms.ModelForm):
     def clean_qty(self):
         qty = self.cleaned_data.get('qty')
@@ -50,7 +49,7 @@ class CartProductInline(admin.TabularInline):
 
 class CartAdmin(admin.ModelAdmin):
     list_display = ('id', 'customer', 'total_product', 'final_price', 'in_order')
-    inlines = [CartProductInline, ]
+    inlines = [CartProductInline,]
     list_filter = ('customer', 'in_order')
     search_fields = ('customer', 'in_order')
     readonly_fields = ('final_price', 'total_product')

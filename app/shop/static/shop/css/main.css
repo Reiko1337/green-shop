@@ -1,8 +1,16 @@
 body {
   padding-top: 56px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .card-body{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
+footer{
+    margin-top: auto;
+    background-color: #1d1e21;
+}
+

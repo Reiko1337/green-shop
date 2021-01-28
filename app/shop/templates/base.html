@@ -1,13 +1,13 @@
 <!doctype html>
 {% load static %}
-{% load metatags%}
+{% load meta_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    {% include_metatags %}
+    {% meta_tags_include request.path %}
     <script
             src="https://code.jquery.com/jquery-3.5.1.js"
             integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
@@ -25,7 +25,6 @@
     <title>{% block title %}Shine{% endblock %}</title>
 </head>
 <body style="background-color: #27292d;" class="text-light">
-
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #1d1e21;">
     <div class="container l-10">
@@ -114,7 +113,33 @@
     <!-- /.row -->
 
 </div>
-<!-- /.container -->
+<footer class="py-3 navbar-fixed-bottom">
+    <div class="container">
+     <div class="row">
+          <div class="col-md-3">
+              <img src="{% static 'shop/img/logo.png' %}" width="150" class="d-inline-block align-top" alt="">
+          </div>
+          <div class="col-md-3">
+            <h5>Cвязаться с нами</h5>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="tel:375298549996">+375298549996 МТС</a></li>
+              <li><a class="text-muted" href="tel:37529134622">+37529134622 А1</a></li>
+              <li><a class="text-muted" href="#">shine.minsk@mail.ru</a></li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h5>О компании</h5>
+            <ul class="list-unstyled text-small">
+              <li><a class="text-muted" href="#">ИП Акопян Инесса Юрьевна</a></li>
+              <li><a class="text-muted" href="#">г. Молодечно ул. Мира 56-89</a></li>
+              <li><a class="text-muted" href="#">УНП 692244138</a></li>
+                <li><a class="text-muted" href="#">Государственная регистрация от 04.01.2020 Молодечненский районным исполнительным комитетом</a></li>
+            </ul>
+          </div>
+        </div>
+    </div>
+    <!-- /.container -->
+  </footer>
 </body>
 
 </html>

@@ -5,7 +5,6 @@ from .utils import CategoryMixin, CartMixin
 from .forms import OrderForm
 from django.db import transaction
 from .services import *
-from django.core.mail import EmailMessage
 
 
 class MainPageView(CartMixin, View):
@@ -17,7 +16,7 @@ class MainPageView(CartMixin, View):
         context = {
             'products': products,
             'categories': categories,
-            'cart': self.cart_view
+            'cart': self.cart_view,
         }
         return render(request, self.template_name, context)
 
@@ -40,7 +39,7 @@ class DetailCategoryView(CartMixin, View):
             'category_name': get_category_name(slug),
             'products': products,
             'categories': categories,
-            'cart': self.cart_view
+            'cart': self.cart_view,
         }
         return render(request, self.template_name, context)
 
@@ -65,12 +64,12 @@ class AddToCartView(CartMixin, View):
             return redirect('main_page')
         if request.user.is_authenticated:
             if add_to_cart_user(request, self.cart.customer, self.cart, product):
-                return redirect('cart')
+                return redirect(request.META.get('HTTP_REFERER'))
         else:
             if self.cart.add(product):
-                return redirect('cart')
+                return redirect(request.META.get('HTTP_REFERER'))
         messages.success(request, "Товар успешно добавлен")
-        return redirect('cart')
+        return redirect(request.META.get('HTTP_REFERER'))
 
 
 class DeleteFromCartView(CartMixin, View):
@@ -133,3 +132,4 @@ class MakeOrderView(CartMixin, View):
             messages.success(request, "Заказ оформлен")
             return redirect('main_page')
         return redirect('cart')
+

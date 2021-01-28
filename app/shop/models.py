@@ -15,6 +15,9 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
         ordering = ['-id']
 
+    def get_tags_meta(self):
+        return [self.slug]
+
     def get_absolute_url(self):
         return reverse('category_detail', args=[self.slug])
 
@@ -35,6 +38,9 @@ class Product(models.Model):
     image = models.ImageField('Изображение', upload_to=get_path_category)
     qty = models.PositiveIntegerField(verbose_name='Количество')
     price = models.DecimalField(validators=[MinValueValidator(0)], max_digits=9, decimal_places=2, verbose_name='Цена')
+
+    def get_tags_meta(self):
+        return [self.slug, self.name, self.category.name]
 
     class Meta:
         verbose_name = 'Товар'
@@ -101,8 +107,9 @@ class Order(models.Model):
     STATUS_COMPLETED = 'completed'
     STATUS_CANCEL = 'cancel'
 
-    BUYING_TYPE_SELF = 'self'
+    BUYING_TYPE_COURIER = 'courier'
     BUYING_TYPE_DELIVERY = 'delivery'
+    BUYING_TYPE_DELIVERY_CART = 'delivery_cart'
 
     PAYMENT_TYPE_CASH = 'cash'
     PAYMENT_TYPE_CARD = 'card'
@@ -116,8 +123,9 @@ class Order(models.Model):
     )
 
     BUYING_TYPE_CHOICES = (
-        (BUYING_TYPE_SELF, 'Самовывоз'),
-        (BUYING_TYPE_DELIVERY, 'Доставка')
+        (BUYING_TYPE_COURIER, 'Курьер в городе Молодечно (бесплатно)'),
+        (BUYING_TYPE_DELIVERY, 'Доставка почтой, оплата при получении (стоимость 3-5 руб, от 40 руб. бесплатно)'),
+        (BUYING_TYPE_DELIVERY_CART, 'Доставка почтой, предоплата (стоимость 3 РУБ, от 40 руб бесплатно)')
     )
 
     PAYMENT_TYPE_CHOICES = (
@@ -140,9 +148,9 @@ class Order(models.Model):
     )
     buying_type = models.CharField(
         max_length=100,
-        verbose_name='Тип заказа',
+        verbose_name='Тип доставки',
         choices=BUYING_TYPE_CHOICES,
-        default=BUYING_TYPE_SELF
+        default=BUYING_TYPE_COURIER
     )
     payment_type = models.CharField(
         max_length=100,
