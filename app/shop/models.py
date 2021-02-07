@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from pathlib import Path
 from django.shortcuts import reverse
 from django.core.validators import MinValueValidator
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 
 class Category(models.Model):
@@ -64,6 +66,7 @@ class CartProduct(models.Model):
     """Корзина продукта"""
     customer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Продукт')
+    size = models.ForeignKey('Size', verbose_name='Размер', on_delete=models.CASCADE, null=True)
     cart = models.ForeignKey('Cart', on_delete=models.CASCADE, verbose_name='Корзина')
     qty = models.PositiveIntegerField(default=1, verbose_name='Общее количество')
     final_price = models.DecimalField(default=0, max_digits=9, decimal_places=2, verbose_name='Общая цена')
@@ -174,3 +177,19 @@ class Order(models.Model):
             return 'Заказ({0}): {1}'.format(self.id, self.customer.username)
         else:
             return 'Заказ({0}): {1} {2}'.format(self.id, self.first_name, self.last_name)
+
+
+class Size(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Продукт')
+    size = models.DecimalField(verbose_name='Размер', max_digits=9, decimal_places=1)
+    qty = models.PositiveIntegerField(verbose_name='Количество')
+
+    class Meta:
+        verbose_name = 'Размер'
+        verbose_name_plural = 'Размеры'
+        ordering = ['product__name']
+
+    def __str__(self):
+        return '{0} | {1}'.format(self.product.name, self.size)
+
+

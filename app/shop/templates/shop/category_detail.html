@@ -30,12 +30,14 @@
                 </div>
             </div>
             <div class="card-footer text-center">
-                {% if product.qty %}
-                <a href="{% url 'add_to_cart' product.slug %}">
-                    <button class="btn btn-danger">Добавить в корзину</button>
+                 {% if product.qty %}
+                <a href="{{ product.get_absolute_url }}">
+                    <button class="btn btn-success">В наличии</button>
                 </a>
                 {% else %}
+                <a href="{{ product.get_absolute_url }}">
                     <button class="btn btn-secondary">Нет в наличии</button>
+                </a>
                 {% endif %}
             </div>
         </div>

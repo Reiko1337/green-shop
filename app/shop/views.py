@@ -28,6 +28,12 @@ class DetailProductView(CartMixin, CategoryMixin, DetailView):
     def get_queryset(self):
         return get_product_filter_slug(self.kwargs['slug'])
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = super().get_object()
+        context['sizes'] = product.size_set.order_by('size').filter(qty__gt=0)
+        return context
+
 
 class DetailCategoryView(CartMixin, View):
     template_name = 'shop/category_detail.html'
@@ -63,12 +69,15 @@ class AddToCartView(CartMixin, View):
             messages.error(request, 'Товара нет в наличии')
             return redirect('main_page')
         if request.user.is_authenticated:
-            if add_to_cart_user(request, self.cart.customer, self.cart, product):
-                return redirect(request.META.get('HTTP_REFERER'))
+            add_to_cart_user(request, self.cart.customer, self.cart, product)
         else:
-            if self.cart.add(product):
-                return redirect(request.META.get('HTTP_REFERER'))
-        messages.success(request, "Товар успешно добавлен")
+            self.cart.add(product)
+        return redirect(request.META.get('HTTP_REFERER'))
+
+    def post(self, request, slug):
+        product = get_product_slug(slug)
+        sizes = get_size_sneaker(product)
+        add_to_cart(request, sizes, product, self.cart)
         return redirect(request.META.get('HTTP_REFERER'))
 
 
@@ -132,4 +141,3 @@ class MakeOrderView(CartMixin, View):
             messages.success(request, "Заказ оформлен")
             return redirect('main_page')
         return redirect('cart')
-

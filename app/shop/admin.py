@@ -4,6 +4,7 @@ from django import forms
 from django.utils.html import mark_safe
 from django.template.loader import render_to_string
 
+
 class CountProductValidation(forms.ModelForm):
     def clean_qty(self):
         qty = self.cleaned_data.get('qty')
@@ -11,6 +12,12 @@ class CountProductValidation(forms.ModelForm):
         if product.qty < qty:
             raise forms.ValidationError('Такого количества нет в наличии')
         return qty
+
+
+class SizePanel(admin.TabularInline):
+    model = models.Size
+    extra = 1
+    ordering = ['size']
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -49,7 +56,7 @@ class CartProductInline(admin.TabularInline):
 
 class CartAdmin(admin.ModelAdmin):
     list_display = ('id', 'customer', 'total_product', 'final_price', 'in_order')
-    inlines = [CartProductInline,]
+    inlines = [CartProductInline, ]
     list_filter = ('customer', 'in_order')
     search_fields = ('customer', 'in_order')
     readonly_fields = ('final_price', 'total_product')
@@ -88,6 +95,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'qty', 'category', 'price', 'get_image')
     search_fields = ('name', 'category')
     readonly_fields = ('get_image_100',)
+    inlines = [SizePanel]
 
     def get_image_100(self, obj):
         return mark_safe(f'<img src={obj.image.url} width="200">')
@@ -98,12 +106,31 @@ class ProductAdmin(admin.ModelAdmin):
     get_image.short_description = 'Изображение'
     get_image_100.short_description = 'Изображение'
 
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            if not obj.size_set.all():
+                return ''
+            else:
+                return ('qty',)
+        return ''
+
+
+class SizeAdmin(admin.ModelAdmin):
+    list_display = ('get_product__name', 'size')
+    search_fields = ('product__name', 'size')
+
+    def get_product__name(self, rec):
+        return rec.product.name
+
+    get_product__name.short_description = 'Товар'
+
 
 admin.site.register(models.Category, CategoryAdmin)
 admin.site.register(models.Product, ProductAdmin)
 admin.site.register(models.CartProduct, CartProductAdmin)
 admin.site.register(models.Cart, CartAdmin)
 admin.site.register(models.Order, OrderAdmin)
+admin.site.register(models.Size, SizeAdmin)
 
 admin.site.site_title = 'Ювелирный Магазин'
 admin.site.site_header = 'Ювелирный Магазин'

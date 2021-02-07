@@ -28,16 +28,22 @@
     <tbody>
     {% for item in cart %}
     <tr>
-        <th scope="row">{{ item.product.name }}</th>
+        <th scope="row">{{ item.product.name }} {% if item.size %} Размер {% if user.is_authenticated %}({{ item.size.normalize }}){% else %}({{ item.size }}){% endif %}{% endif %}</th>
         <td class="w-25"><img src="{{ item.product.image.url }}" class="img-fluid"></td>
         <td>{{ item.product.price }} BYN.</td>
         <td>
             <form action="{% url 'change_qty' item.id %}"
                   method="POST">
                 {% csrf_token %}
+                {% if item.size_obj %}
+                <input type="number" class="form-control" name="qty" style="width: 70px;" min="1"
+                       max="{% if item.size_obj.qty < 100 %}{{ item.size_obj.qty }}{% else %}100{% endif %}"
+                       value="{{ item.qty }}">
+                {% else %}
                 <input type="number" class="form-control" name="qty" style="width: 70px;" min="1"
                        max="{% if item.product.qty < 100 %}{{ item.product.qty }}{% else %}100{% endif %}"
                        value="{{ item.qty }}">
+                {% endif %}
                 <br>
                 <input type="submit" class="btn btn-primary" value="Изменить кол-во">
             </form>

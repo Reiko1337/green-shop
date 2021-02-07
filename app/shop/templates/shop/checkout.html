@@ -27,7 +27,7 @@
   <tbody>
     {% for item in cart %}
         <tr>
-          <th scope="row">{{ item.product.name }}</th>
+          <th scope="row">{{ item.product.name }} {% if item.size %} Размер {% if user.is_authenticated %}({{ item.size.normalize }}){% else %}({{ item.size }}){% endif %}{% endif %}</th>
           <td class="w-25"><img src="{{ item.product.image.url }}" class="img-fluid"></td>
           <td>{{ item.product.price }} руб.</td>
           <td>{{ item.qty }}</td>

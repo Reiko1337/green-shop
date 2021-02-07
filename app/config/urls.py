@@ -23,6 +23,6 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL,  document_root=settings.MEDIA_ROOT)
 
-if not settings.DEBUG:
-    urlpatterns.append(path('static/<path:path>', serve, {'insecure': True}))
-    urlpatterns.append(path('media/<path:path>', media_serve, {'document_root': settings .MEDIA_ROOT}))
+# if not settings.DEBUG:
+#     urlpatterns.append(path('static/<path:path>', serve, {'insecure': True}))
+#     urlpatterns.append(path('media/<path:path>', media_serve, {'document_root': settings .MEDIA_ROOT}))

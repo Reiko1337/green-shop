@@ -8,6 +8,7 @@
 ---------------------------Товар---------------------------
 {% for item in items %}
 Наименование: {{ item.product.name }}
+{% if item.size %}Размер ({{ item.size.size.normalize }}){% endif %}
 Количество: {{ item.qty }}
 Цена: {{ item.product.price }} BYN
 Общая цена: {{ item.final_price }} BYN

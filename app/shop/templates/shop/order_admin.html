@@ -9,7 +9,7 @@
     </tr>
     {% for item in cart_products %}
     <tr>
-        <td>{{ item.product.name }}</td>
+        <td>{{ item.product.name }} <br> {% if item.size %}Размер ({{ item.size.size.normalize }}){% endif %}</td>
         <td align="center"><img src="{{ item.product.image.url }}" width="50"></td>
         <td>{{ item.qty }}</td>
         <td>{{ item.final_price }}</td>

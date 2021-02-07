@@ -1,4 +1,4 @@
-from .models import Category, Cart, CartProduct, Order
+from .models import Category, Cart, CartProduct, Order, Size
 from django.views.generic.detail import SingleObjectMixin
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -58,3 +58,14 @@ def delete_order(sender, instance, **kwargs):
         product.save()
     cart.delete()
 
+
+@receiver(post_delete, sender=Size)
+@receiver(post_save, sender=Size)
+def recalc_qty_product(instance, **kwargs):
+    product = instance.product
+    product_qty = product.size_set.all().aggregate(models.Sum('qty'))
+    if product_qty.get('qty__sum'):
+        product.qty = product_qty['qty__sum']
+    else:
+        product.qty = 0
+    product.save()
